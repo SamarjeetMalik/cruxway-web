@@ -71,12 +71,24 @@ export const legal = {
     'Cruxway — a permanent home for family- and founder-owned businesses. Built and backed by founders and families.',
 } as const;
 
+/**
+ * Drives canonical URLs, the sitemap, and Open Graph. Overridden by
+ * `NEXT_PUBLIC_SITE_URL` so a preview deployment describes itself correctly
+ * instead of claiming to be the production domain.
+ *
+ * Trailing slash is stripped because GitHub's `configure-pages` action emits
+ * one, and every use here appends a path.
+ */
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cruxway.com').replace(/\/+$/, '');
+
 export const site = {
   name: 'Cruxway',
+  url: siteUrl,
   /**
-   * Drives canonical URLs, the sitemap, and Open Graph. Overridden by
-   * `NEXT_PUBLIC_SITE_URL` so a preview deployment describes itself correctly
-   * instead of claiming to be the production domain.
+   * Absolute, because `metadataBase` would resolve a root-relative path
+   * against the origin and drop the `/cruxway-web` project-site prefix.
+   * Rebuild with `node scripts/build-og-image.mjs` if the hero or headline
+   * ever changes.
    */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cruxway.com',
+  ogImage: `${siteUrl}/og.jpg`,
 } as const;
