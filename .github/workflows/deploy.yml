@@ -21,7 +21,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Supplies `base_path` and `base_url` already correctly cased and
+      # normalised — safer than assembling them from the repo name, since
+      # Pages lowercases the owner but `github.repository_owner` does not.
       - uses: actions/configure-pages@v5
+        id: pages
 
       - uses: actions/setup-node@v4
         with:
@@ -35,15 +39,15 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
           # Pages serves a project site from /<repo>, so assets need that prefix.
-          PAGES_BASE_PATH: /${{ github.event.repository.name }}
-          NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: npm run build
 
       # A file host cannot 301, so legacy URLs get canonical + meta-refresh stubs.
       - name: Emit legacy redirects
         env:
-          PAGES_BASE_PATH: /${{ github.event.repository.name }}
-          NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: node scripts/emit-redirects.mjs
 
       # Without this, Pages runs Jekyll, which discards Next's `_next/` directory.
