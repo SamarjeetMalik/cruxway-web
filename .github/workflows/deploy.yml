@@ -39,6 +39,13 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
         run: npm run build
 
+      # A file host cannot 301, so legacy URLs get canonical + meta-refresh stubs.
+      - name: Emit legacy redirects
+        env:
+          PAGES_BASE_PATH: /${{ github.event.repository.name }}
+          NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        run: node scripts/emit-redirects.mjs
+
       # Without this, Pages runs Jekyll, which discards Next's `_next/` directory.
       - name: Disable Jekyll
         run: touch out/.nojekyll

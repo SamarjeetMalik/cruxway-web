@@ -2,12 +2,33 @@
 
 Editorial marketing site. Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS 3.
 
+**Live:** https://samarjeetmalik.github.io/cruxway-web/
+
 ```bash
 npm install
 npm run dev        # http://localhost:3000
 npm run build      # production build
 npm run typecheck  # tsc --noEmit
 ```
+
+## Deployment
+
+Two targets from one codebase, switched by `GITHUB_PAGES`:
+
+| | Default (Node host) | `GITHUB_PAGES=true` |
+|---|---|---|
+| Output | server-rendered | static export to `out/` |
+| Images | Next optimiser, AVIF/WebP | pre-compressed files as-is |
+| Legacy URLs | real 301s via `redirects()` | canonical + meta-refresh stubs |
+
+The Pages build runs on every push to `main` via `.github/workflows/deploy.yml`.
+Because a project site is served from `/<repo>`, image `src` values need the
+base path put back by hand — Next does that automatically for `<Link>` and its
+own assets, but not for `next/image` when the optimiser is off. That is what
+`lib/assetPath.ts` exists for.
+
+`scripts/compress-images.mjs` is a one-off asset pass; re-run it if the
+photography is ever replaced.
 
 ---
 
@@ -116,15 +137,33 @@ as a large fill. Two variants exist because one value cannot serve both grounds:
 `bronze` (#B8945F) on navy, and `bronze.deep` (#89693D) wherever text sits on
 ivory.
 
-Measured contrast — every text pair clears WCAG AA, including the 11px labels:
+## Day and night
 
-| Pair | Ratio |
-|---|---|
-| navy on ivory | 14.91 |
-| bone on navy | 12.37 |
-| bronze on navy | 6.35 |
-| slate on ivory | 5.86 |
-| bronze.deep on ivory | 4.64 |
+Components never name a literal colour — they name a role (`surface`, `ink`,
+`parchment`, `rule`, `accent`), and the role is a CSS variable that changes with
+the theme. That is what lets one set of markup serve both.
+
+The theme follows the visitor's OS preference and is only pinned once they use
+the toggle, so someone who never touches it keeps tracking their system. The
+choice is stored under `cruxway-theme` and read by a blocking script in
+`app/layout.tsx` before first paint, so there is no flash of the wrong theme.
+
+`surface-deep` — the full-bleed band that punctuates each page — is navy against
+ivory by day, and goes *darker* than the page ground by night, so the
+compositional rhythm survives the inversion rather than flattening into one
+field. Photography also takes an extra brightness step down in dark mode so a
+full-bleed image is never the brightest thing on a night page.
+
+Measured contrast — every pair clears WCAG AA in both themes, including the
+11px labels:
+
+| Pair | Day | Night |
+|---|---|---|
+| body text on ground | 14.91 | 15.09 |
+| heading on hero | — | 16.07 |
+| text on the deep band | 12.37 | 8.06 |
+| secondary text on ground | 5.86 | 7.75 |
+| accent label on ground | 4.64 | 7.56 |
 
 **Type:** EB Garamond (display) and Inter (everything else), both self-hosted at
 build via `next/font`. Display sizes are fluid `clamp()`; the lower bound is the
