@@ -7,6 +7,7 @@ import {
   legal,
   nav,
   orientation,
+  regionHref,
   REGIONS,
   regionNames,
   type Region,
@@ -32,7 +33,7 @@ export function SiteFooter({ region }: { region: Region }) {
               {nav.map((item) => (
                 <li key={item.label}>
                   <Link
-                    href={`/${region}${item.href}`}
+                    href={regionHref(region, item.href)}
                     className="link-draw text-body text-parchment-soft/90 transition-colors duration-500 ease-editorial hover:text-parchment"
                   >
                     {item.label}
@@ -49,7 +50,7 @@ export function SiteFooter({ region }: { region: Region }) {
               </li>
               <li>
                 <Link
-                  href={`/${otherRegion}`}
+                  href={regionHref(otherRegion, '')}
                   className="link-draw text-body text-parchment-soft/60 transition-colors duration-500 ease-editorial hover:text-parchment"
                 >
                   {regionNames[otherRegion]}

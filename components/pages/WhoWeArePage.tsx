@@ -1,47 +1,23 @@
-import type { Metadata } from 'next';
-
 import { NumberedList } from '@/components/primitives/NumberedList';
 import { Reveal } from '@/components/primitives/Reveal';
 import { Measure, Section } from '@/components/primitives/Section';
 import { Label, Rule } from '@/components/primitives/Typography';
-import { Hero } from '@/components/sections/Hero';
+import { PageOpening } from '@/components/sections/Hero';
 import { PartnerGrid } from '@/components/sections/PartnerGrid';
 import { whoWeAre } from '@/content/copy';
-import { heroImages } from '@/content/images';
-import type { Region } from '@/content/site';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ region: Region }>;
-}): Promise<Metadata> {
-  const { region } = await params;
-  return {
-    title: 'Who we are',
-    description: whoWeAre.opening[0],
-    alternates: { canonical: `/${region}/who-we-are` },
-  };
-}
-
-export default async function WhoWeArePage({ params }: { params: Promise<{ region: Region }> }) {
-  const { region } = await params;
-  const image = heroImages.whoWeAre[region];
+export function WhoWeArePage() {
+  const [opening, ...rest] = whoWeAre.opening;
 
   return (
     <>
-      <Hero
-        variant="interior"
-        label="Who we are"
-        headline={whoWeAre.headline}
-        image={image.src}
-        imageAlt={image.alt}
-      />
+      <PageOpening label="Who we are" headline={whoWeAre.headline} supporting={opening} />
 
-      <Section>
-        <Measure wide className="space-y-8">
-          {whoWeAre.opening.map((paragraph, index) => (
-            <Reveal key={paragraph} delay={index * 80}>
-              <p className="text-lead text-ink">{paragraph}</p>
+      <Section compact>
+        <Measure wide className="space-y-6">
+          {rest.map((paragraph) => (
+            <Reveal key={paragraph}>
+              <p className="text-body text-ink-soft">{paragraph}</p>
             </Reveal>
           ))}
         </Measure>
@@ -66,7 +42,7 @@ export default async function WhoWeArePage({ params }: { params: Promise<{ regio
               {whoWeAre.involvement.label}
             </Label>
           </Reveal>
-          <Reveal delay={80}>
+          <Reveal delay={90}>
             <Measure wide>
               <p className="text-lead text-ink">{whoWeAre.involvement.body}</p>
             </Measure>
@@ -87,7 +63,7 @@ export default async function WhoWeArePage({ params }: { params: Promise<{ regio
           <div>
             <Reveal>
               <Measure wide>
-                <p className="font-serif text-subtitle text-parchment">{whoWeAre.beliefs.intro}</p>
+                <p className="text-body text-parchment-soft/85">{whoWeAre.beliefs.intro}</p>
               </Measure>
             </Reveal>
             <div className="mt-14">
@@ -104,7 +80,7 @@ export default async function WhoWeArePage({ params }: { params: Promise<{ regio
               {whoWeAre.why.label}
             </Label>
           </Reveal>
-          <Reveal delay={80}>
+          <Reveal delay={90}>
             <Measure wide>
               <p className="text-lead text-ink">{whoWeAre.why.body}</p>
             </Measure>

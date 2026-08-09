@@ -5,10 +5,11 @@ import { TermDetail } from './Typography';
 /**
  * The site's main structural device: a numbered editorial list. Rows are
  * separated by hairlines rather than boxed into cards, and the numeral sits in
- * its own column so the text block keeps a single clean left edge.
+ * a fixed column so every row shares one text edge — the alignment the inline
+ * em-dash version could never hold.
  *
- * On narrow viewports the numeral moves above the text rather than shrinking
- * the measure — the layout recomposes instead of scaling down.
+ * The whole row responds to hover, not just the text, so the list reads as
+ * something you can move through rather than a static block.
  */
 export function NumberedList({
   items,
@@ -17,25 +18,22 @@ export function NumberedList({
   items: readonly Pair[];
   tone?: 'default' | 'onDeep';
 }) {
-  const ruleColor = tone === 'onDeep' ? 'border-rule-deep/15' : 'border-rule';
+  const ruleColour = tone === 'onDeep' ? 'border-parchment/15' : 'border-rule';
+  const numeralColour = tone === 'onDeep' ? 'text-accent-deep' : 'text-accent';
 
   return (
-    <ol className={`border-t ${ruleColor}`}>
+    <ol className={`border-t ${ruleColour}`}>
       {items.map((item, index) => (
-        <li key={item.term} className={`border-b ${ruleColor}`}>
-          <Reveal delay={index * 60}>
-            <div className="grid gap-x-10 gap-y-3 py-8 sm:grid-cols-[3.5rem_1fr] md:py-10">
+        <li key={item.term} className={`group border-b ${ruleColour}`}>
+          <Reveal delay={index * 70}>
+            <div className="grid grid-cols-[2.75rem_1fr] gap-x-6 py-9 transition-transform duration-500 ease-editorial group-hover:translate-x-1.5 sm:grid-cols-[4.5rem_1fr] sm:gap-x-10 md:py-11">
               <span
                 aria-hidden
-                className={`font-serif text-numeral tabular-nums ${
-                  tone === 'onDeep' ? 'text-accent-deep' : 'text-accent'
-                }`}
+                className={`font-serif text-numeral leading-none tabular-nums ${numeralColour} opacity-55 transition-opacity duration-500 ease-editorial group-hover:opacity-100`}
               >
                 {String(index + 1).padStart(2, '0')}
               </span>
-              <div className="max-w-measure-wide">
-                <TermDetail term={item.term} detail={item.detail} tone={tone} />
-              </div>
+              <TermDetail term={item.term} detail={item.detail} tone={tone} />
             </div>
           </Reveal>
         </li>
@@ -55,15 +53,15 @@ export function PlainList({
   items: readonly string[];
   tone?: 'default' | 'onDeep';
 }) {
-  const ruleColor = tone === 'onDeep' ? 'border-rule-deep/15' : 'border-rule';
+  const ruleColour = tone === 'onDeep' ? 'border-parchment/15' : 'border-rule';
 
   return (
-    <ul className={`border-t ${ruleColor}`}>
+    <ul className={`border-t ${ruleColour}`}>
       {items.map((item, index) => (
-        <li key={item} className={`border-b ${ruleColor}`}>
-          <Reveal delay={index * 45}>
+        <li key={item} className={`group border-b ${ruleColour}`}>
+          <Reveal delay={index * 50}>
             <p
-              className={`py-5 font-serif text-subtitle ${
+              className={`py-6 font-serif text-subtitle transition-transform duration-500 ease-editorial group-hover:translate-x-1.5 ${
                 tone === 'onDeep' ? 'text-parchment' : 'text-ink'
               }`}
             >

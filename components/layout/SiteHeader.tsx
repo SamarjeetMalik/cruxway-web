@@ -5,19 +5,53 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { ThemeToggle } from '@/components/primitives/ThemeToggle';
-import { investorNav, nav, orientation, REGIONS, regionNames, type Region } from '@/content/site';
-
-/** Nav links are region-scoped; `href: ''` is the region home. */
-const hrefFor = (region: Region, href: string) => `/${region}${href}`;
+import {
+  investorNav,
+  nav,
+  orientation,
+  regionHref,
+  REGIONS,
+  regionNames,
+  type Region,
+} from '@/content/site';
 
 export function SiteHeader({ region }: { region: Region }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Close the menu whenever the route changes.
   useEffect(() => setOpen(false), [pathname]);
+
+  /**
+   * Reading-progress hairline. Cheap enough to run on scroll directly, and
+   * skipped entirely for visitors who asked for reduced motion, for whom a
+   * bar that tracks the scrollbar is noise.
+   */
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [pathname]);
 
   // While open: lock scroll, close on Escape, and keep focus inside the panel.
   useEffect(() => {
@@ -32,12 +66,10 @@ export function SiteHeader({ region }: { region: Region }) {
         triggerRef.current?.focus();
         return;
       }
-
       if (event.key !== 'Tab' || !panelRef.current) return;
 
       const focusable = panelRef.current.querySelectorAll<HTMLElement>('a[href], button');
       if (focusable.length === 0) return;
-
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
 
@@ -60,21 +92,23 @@ export function SiteHeader({ region }: { region: Region }) {
   }, [open]);
 
   const otherRegion = REGIONS.find((candidate) => candidate !== region)!;
+  const homeHref = regionHref(region, '');
 
   return (
-    <header className="sticky top-0 z-40 border-b border-rule bg-surface/92 backdrop-blur-sm">
-      <div className="mx-auto flex h-[68px] w-full max-w-shell items-center justify-between px-gutter md:h-[76px]">
+    // Solid, not translucent. A previous `bg-surface/92` was not a valid
+    // Tailwind opacity step, so the class was dropped and the header had no
+    // background at all — page content scrolled visibly underneath it.
+    <header className="sticky top-0 z-40 border-b border-rule bg-surface">
+      <div className="mx-auto flex h-[68px] w-full max-w-shell items-center justify-between gap-6 px-gutter md:h-[76px]">
         <div className="flex items-baseline gap-5">
           <Link
-            href={`/${region}`}
-            className="font-serif text-[1.6rem] leading-none tracking-[-0.03em] text-ink transition-colors duration-500 ease-editorial hover:text-accent md:text-[1.8rem]"
+            href={homeHref}
+            className="font-serif text-[1.6rem] leading-none tracking-[-0.03em] text-ink transition-colors duration-300 ease-editorial hover:text-accent md:text-[1.8rem]"
           >
             Cruxway
           </Link>
-          {/* The standing tagline only appears where it fits on one line;
-              below that it would wrap against the navigation. */}
           <span aria-hidden className="hidden h-3.5 w-px bg-rule 2xl:block" />
-          <p className="hidden whitespace-nowrap font-sans text-[0.72rem] text-ink-soft 2xl:block">
+          <p className="hidden whitespace-nowrap font-sans text-small text-ink-soft 2xl:block">
             {orientation.tagline}
           </p>
         </div>
@@ -82,15 +116,15 @@ export function SiteHeader({ region }: { region: Region }) {
         <div className="hidden items-center gap-7 lg:flex xl:gap-9">
           <nav aria-label="Primary" className="flex items-center gap-7 xl:gap-9">
             {nav.map((item) => {
-              const href = hrefFor(region, item.href);
-              const active = pathname === href;
+              const href = regionHref(region, item.href);
+              const active = pathname === href || pathname === `${href}/`;
               return (
                 <Link
                   key={item.label}
                   href={href}
                   aria-current={active ? 'page' : undefined}
-                  className={`link-draw whitespace-nowrap font-sans text-label uppercase transition-colors duration-500 ease-editorial ${
-                    active ? 'text-ink' : 'text-ink-soft hover:text-ink'
+                  className={`link-draw whitespace-nowrap font-sans text-label uppercase transition-colors duration-300 ease-editorial ${
+                    active ? 'text-accent' : 'text-ink-soft hover:text-ink'
                   }`}
                 >
                   {item.label}
@@ -102,16 +136,14 @@ export function SiteHeader({ region }: { region: Region }) {
 
             <Link
               href={investorNav.href}
-              className="link-draw whitespace-nowrap font-sans text-label uppercase text-accent transition-colors duration-500 ease-editorial hover:text-ink"
+              className="link-draw whitespace-nowrap font-sans text-label uppercase text-ink-soft transition-colors duration-300 ease-editorial hover:text-ink"
             >
               {investorNav.label}
             </Link>
 
-            <span aria-hidden className="h-3.5 w-px bg-rule" />
-
             <Link
-              href={`/${otherRegion}`}
-              className="link-draw whitespace-nowrap font-sans text-label uppercase text-ink-soft transition-colors duration-500 ease-editorial hover:text-ink"
+              href={regionHref(otherRegion, '')}
+              className="link-draw whitespace-nowrap font-sans text-label uppercase text-ink-soft transition-colors duration-300 ease-editorial hover:text-ink"
             >
               {regionNames[otherRegion]}
             </Link>
@@ -120,7 +152,7 @@ export function SiteHeader({ region }: { region: Region }) {
           <ThemeToggle />
         </div>
 
-        <div className="flex items-center gap-1 lg:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           <ThemeToggle />
           <button
             ref={triggerRef}
@@ -133,15 +165,15 @@ export function SiteHeader({ region }: { region: Region }) {
             {open ? 'Close' : 'Menu'}
             <span aria-hidden className="flex h-3 w-5 flex-col justify-between">
               <span
-                className={`h-px w-full bg-ink transition-transform duration-500 ease-editorial ${
+                className={`h-px w-full bg-ink transition-transform duration-300 ease-editorial ${
                   open ? 'translate-y-[5.5px] rotate-45' : ''
                 }`}
               />
               <span
-                className={`h-px w-full bg-ink transition-opacity duration-300 ${open ? 'opacity-0' : ''}`}
+                className={`h-px w-full bg-ink transition-opacity duration-200 ${open ? 'opacity-0' : ''}`}
               />
               <span
-                className={`h-px w-full bg-ink transition-transform duration-500 ease-editorial ${
+                className={`h-px w-full bg-ink transition-transform duration-300 ease-editorial ${
                   open ? '-translate-y-[5.5px] -rotate-45' : ''
                 }`}
               />
@@ -149,6 +181,12 @@ export function SiteHeader({ region }: { region: Region }) {
           </button>
         </div>
       </div>
+
+      <div
+        aria-hidden
+        className="h-px origin-left bg-accent transition-transform duration-150 ease-out"
+        style={{ transform: `scaleX(${progress})` }}
+      />
 
       {open && (
         <div
@@ -160,7 +198,7 @@ export function SiteHeader({ region }: { region: Region }) {
             {nav.map((item) => (
               <Link
                 key={item.label}
-                href={hrefFor(region, item.href)}
+                href={regionHref(region, item.href)}
                 className="border-b border-rule py-5 font-serif text-title text-ink"
               >
                 {item.label}
@@ -168,11 +206,14 @@ export function SiteHeader({ region }: { region: Region }) {
             ))}
             <Link
               href={investorNav.href}
-              className="border-b border-rule py-5 font-serif text-subtitle text-accent"
+              className="border-b border-rule py-5 font-serif text-subtitle text-ink"
             >
               {investorNav.label}
             </Link>
-            <Link href={`/${otherRegion}`} className="py-5 font-sans text-label uppercase text-ink-soft">
+            <Link
+              href={regionHref(otherRegion, '')}
+              className="py-5 font-sans text-label uppercase text-ink-soft"
+            >
               Switch to {regionNames[otherRegion]}
             </Link>
           </nav>

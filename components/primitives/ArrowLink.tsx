@@ -24,7 +24,8 @@ export function ArrowLink({
 
   const content = (
     <>
-      <span className="font-sans text-label uppercase">{children}</span>
+      {/* Medium, to match every other label on the site. */}
+      <span className="font-sans text-label font-medium uppercase">{children}</span>
       <svg
         aria-hidden
         viewBox="0 0 24 12"

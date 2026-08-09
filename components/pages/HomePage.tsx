@@ -1,5 +1,3 @@
-import type { Metadata } from 'next';
-
 import { NumberedList } from '@/components/primitives/NumberedList';
 import { Reveal } from '@/components/primitives/Reveal';
 import { Measure, Section } from '@/components/primitives/Section';
@@ -7,23 +5,9 @@ import { Label, Rule } from '@/components/primitives/Typography';
 import { Hero } from '@/components/sections/Hero';
 import { home } from '@/content/copy';
 import { heroImages } from '@/content/images';
-import { orientation, regionNames, type Region } from '@/content/site';
+import { regionHref, type Region } from '@/content/site';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ region: Region }>;
-}): Promise<Metadata> {
-  const { region } = await params;
-  return {
-    title: orientation.descriptor,
-    description: `${orientation.supporting} ${regionNames[region]}.`,
-    alternates: { canonical: `/${region}` },
-  };
-}
-
-export default async function HomePage({ params }: { params: Promise<{ region: Region }> }) {
-  const { region } = await params;
+export function HomePage({ region }: { region: Region }) {
   const image = heroImages.home[region];
 
   return (
@@ -31,7 +15,7 @@ export default async function HomePage({ params }: { params: Promise<{ region: R
       <Hero
         headline={home.hero.headline}
         supporting={home.hero.supporting}
-        cta={{ href: `/${region}/contact`, text: home.hero.cta }}
+        cta={{ href: regionHref(region, '/contact'), text: home.hero.cta }}
         image={image.src}
         imageAlt={image.alt}
       />
@@ -44,7 +28,7 @@ export default async function HomePage({ params }: { params: Promise<{ region: R
               {home.intro.label}
             </Label>
           </Reveal>
-          <Reveal delay={80}>
+          <Reveal delay={90}>
             <Measure wide>
               <p className="text-lead text-ink">{home.intro.body}</p>
             </Measure>
@@ -66,7 +50,7 @@ export default async function HomePage({ params }: { params: Promise<{ region: R
           <div>
             <Reveal>
               <Measure wide>
-                <p className="font-serif text-subtitle text-parchment">{home.different.intro}</p>
+                <p className="text-body text-parchment-soft/85">{home.different.intro}</p>
               </Measure>
             </Reveal>
             <div className="mt-14">

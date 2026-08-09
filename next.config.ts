@@ -1,17 +1,13 @@
 import type { NextConfig } from 'next';
 
-const REGIONS = ['us', 'india'] as const;
-
 /**
- * The previous site exposed five pages per region. The v3 structure folds
- * those into two, so every legacy URL is redirected rather than left to 404.
+ * Retired URLs and where they now point — JSON so that `next.config.ts` and
+ * `scripts/emit-redirects.mjs` can read the same list and never drift. It
+ * covers the old five-page-per-region layout folding into v3's four pages, the
+ * United States site moving from `/us/*` to the domain root, and the
+ * region-choosing page at `/` being removed.
  */
-const legacyPageMap: Record<string, string> = {
-  focus: 'what-we-do',
-  playbook: 'what-we-do',
-  principles: 'who-we-are',
-  team: 'who-we-are',
-};
+import legacyRedirects from './content/redirects.json';
 
 /**
  * `GITHUB_PAGES=true` switches to a fully static export served from a
@@ -34,7 +30,7 @@ const nextConfig: NextConfig = {
         basePath,
         // Static hosts cannot run the image optimiser.
         images: { unoptimized: true },
-        // Emits `/us/index.html` rather than `/us.html`, which is what Pages serves.
+        // Emits `/contact/index.html` rather than `/contact.html`.
         trailingSlash: true,
       }
     : {
@@ -44,22 +40,11 @@ const nextConfig: NextConfig = {
           imageSizes: [200, 320, 420, 640],
         },
         async redirects() {
-          const regionRedirects = REGIONS.flatMap((region) =>
-            Object.entries(legacyPageMap).map(([from, to]) => ({
-              source: `/${region}/${from}`,
-              destination: `/${region}/${to}`,
-              permanent: true,
-            })),
-          );
-
-          return [
-            ...regionRedirects,
-            {
-              source: '/investor-login',
-              destination: '/investor-relations',
-              permanent: true,
-            },
-          ];
+          return legacyRedirects.map(([source, destination]) => ({
+            source,
+            destination,
+            permanent: true,
+          }));
         },
       }),
 };

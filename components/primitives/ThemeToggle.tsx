@@ -14,6 +14,9 @@ type Theme = 'light' | 'dark';
  * keeps following their system as it changes through the day. The choice is
  * stored under `cruxway-theme`; the blocking script in `app/layout.tsx` reads
  * the same key before first paint so there is no flash of the wrong theme.
+ *
+ * The control is a bordered disc rather than a bare glyph: an 18px hairline
+ * icon floating on its own was too easy to lose against the page.
  */
 export function ThemeToggle({ tone = 'default' }: { tone?: 'default' | 'onDeep' }) {
   const [theme, setTheme] = useState<Theme | null>(null);
@@ -46,7 +49,9 @@ export function ThemeToggle({ tone = 'default' }: { tone?: 'default' | 'onDeep' 
   };
 
   const colour =
-    tone === 'onDeep' ? 'text-parchment-soft hover:text-parchment' : 'text-ink-soft hover:text-ink';
+    tone === 'onDeep'
+      ? 'border-parchment/30 text-parchment hover:border-parchment hover:bg-parchment/10'
+      : 'border-rule text-ink hover:border-accent hover:text-accent';
 
   return (
     <button
@@ -54,22 +59,24 @@ export function ThemeToggle({ tone = 'default' }: { tone?: 'default' | 'onDeep' 
       onClick={toggle}
       // Rendered before the theme is known, so the label stays generic until then.
       aria-label={theme ? `Switch to ${theme === 'dark' ? 'day' : 'night'} theme` : 'Switch theme'}
-      className={`inline-flex h-9 w-9 items-center justify-center transition-colors duration-500 ease-editorial ${colour}`}
+      title={theme === 'dark' ? 'Day' : 'Night'}
+      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors duration-300 ease-editorial ${colour}`}
     >
       <svg
         aria-hidden
         viewBox="0 0 24 24"
-        className="h-[18px] w-[18px]"
+        className="h-[19px] w-[19px]"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.25"
+        strokeWidth="1.5"
         strokeLinecap="round"
+        strokeLinejoin="round"
       >
         {theme === 'dark' ? (
           // Sun — offers a return to day.
           <>
-            <circle cx="12" cy="12" r="4.2" />
-            <path d="M12 2.4v2.3M12 19.3v2.3M4.2 12H1.9M22.1 12h-2.3M6.5 6.5 4.9 4.9M19.1 19.1l-1.6-1.6M17.5 6.5l1.6-1.6M4.9 19.1l1.6-1.6" />
+            <circle cx="12" cy="12" r="4.1" />
+            <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" />
           </>
         ) : (
           // Moon — offers night.

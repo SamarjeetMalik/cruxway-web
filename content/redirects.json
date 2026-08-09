@@ -1,0 +1,18 @@
+[
+  ["/us", "/"],
+  ["/us/who-we-are", "/who-we-are"],
+  ["/us/what-we-do", "/what-we-do"],
+  ["/us/contact", "/contact"],
+
+  ["/us/focus", "/what-we-do"],
+  ["/us/playbook", "/what-we-do"],
+  ["/us/principles", "/who-we-are"],
+  ["/us/team", "/who-we-are"],
+
+  ["/india/focus", "/india/what-we-do"],
+  ["/india/playbook", "/india/what-we-do"],
+  ["/india/principles", "/india/who-we-are"],
+  ["/india/team", "/india/who-we-are"],
+
+  ["/investor-relations", "/investor-login"]
+]

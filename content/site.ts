@@ -32,10 +32,18 @@ export const nav = [
   { href: '/contact', label: 'Contact' },
 ] as const;
 
+/**
+ * The United States site is the root of the domain and India is nested under
+ * `/india`, so there is no region-choosing page standing between a visitor and
+ * the site. Region is switched from the header instead.
+ */
+export const regionHref = (region: Region, path: string): string =>
+  region === 'us' ? path || '/' : `/india${path}`;
+
 /** v3 sets investor access apart from the main navigation. */
 export const investorNav = {
-  href: '/investor-relations',
-  label: 'Investor relations',
+  href: '/investor-login',
+  label: 'Investor login',
 } as const;
 
 type ContactDetails = {

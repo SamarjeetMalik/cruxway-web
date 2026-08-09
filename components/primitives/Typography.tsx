@@ -85,32 +85,37 @@ export function Placeholder({ label = 'ADD CONTENT' }: { label?: string }) {
 }
 
 /**
- * Renders v3's "lead-in — explanation" construction. The two halves are stored
- * separately in the content layer so the lead-in can be styled, and re-joined
- * here with the em dash exactly as written.
+ * v3 writes these as "lead-in — explanation" on one line. Set inline, the em
+ * dash lands at a different place in every row and the two halves fight over
+ * size, which read as sloppy. Stacking them drops the dash, gives every row a
+ * single shared baseline, and lets the term and the explanation each keep one
+ * consistent size. The wording is untouched.
  */
 export function TermDetail({
   term,
   detail,
   tone = 'default',
-  size = 'lead',
 }: {
   term: string;
   detail: string;
   tone?: 'default' | 'onDeep';
-  size?: 'lead' | 'body';
 }) {
   return (
-    <p className={size === 'lead' ? 'text-lead' : 'text-body'}>
-      <strong
-        className={`font-serif font-normal ${tone === 'onDeep' ? 'text-parchment' : 'text-ink'}`}
+    <div>
+      <h3
+        className={`font-serif text-subtitle ${tone === 'onDeep' ? 'text-parchment' : 'text-ink'}`}
       >
         {term}
-      </strong>
-      <span className={tone === 'onDeep' ? 'text-parchment-soft/85' : 'text-ink-soft'}>
-        {' '}
-        — {detail}
-      </span>
-    </p>
+      </h3>
+      <p
+        className={`mt-3 max-w-measure text-body ${
+          tone === 'onDeep' ? 'text-parchment-soft/80' : 'text-ink-soft'
+        }`}
+      >
+        {/* The explanation follows an em dash in the source, so it begins
+            lower-case; as its own sentence it takes a capital. */}
+        {detail.charAt(0).toUpperCase() + detail.slice(1)}
+      </p>
+    </div>
   );
 }
