@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * Semantic tokens, as space-separated RGB so Tailwind's opacity modifiers
+   * (`text-ink/70`) keep working. Components never name a literal colour —
+   * they name a role, and the role changes with the theme.
+   *
+   * `surface-deep` is the full-bleed band that punctuates each page. In light
+   * mode it is Cruxway navy against ivory; in dark mode it goes *darker* than
+   * the page ground, so the compositional rhythm survives the inversion
+   * instead of collapsing into one flat field.
+   */
+  :root {
+    --surface: 247 245 240; /* #F7F5F0 ivory */
+    --surface-alt: 240 237 229; /* #F0EDE5 */
+    --surface-deep: 7 22 51; /* #071633 navy */
+
+    --ink: 10 31 68; /* #0A1F44 — 14.9:1 on ivory */
+    --ink-soft: 90 95 108; /* #5A5F6C — 5.9:1 */
+
+    --parchment: 247 245 240; /* text on the deep band */
+    --parchment-soft: 220 214 200; /* #DCD6C8 bone — 12.4:1 on navy */
+
+    --rule: 231 226 216; /* #E7E2D8 */
+    --rule-deep: 247 245 240; /* used at low alpha on the deep band */
+
+    --accent: 137 105 61; /* #89693D — 4.64:1 on ivory */
+    --accent-deep: 184 148 95; /* #B8945F — 6.35:1 on navy */
+
+    --scrim-from: 7 22 51;
+
+    --reveal-distance: 14px;
+    --reveal-duration: 620ms;
+    --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+
+    color-scheme: light;
+  }
+
+  .dark {
+    --surface: 11 21 38; /* #0B1526 */
+    --surface-alt: 16 28 48; /* #101C30 */
+    --surface-deep: 5 13 26; /* #050D1A — darker than the ground */
+
+    --ink: 237 233 225; /* #EDE9E1 — 15.4:1 on surface */
+    --ink-soft: 162 169 184; /* #A2A9B8 — 7.6:1 */
+
+    --parchment: 237 233 225;
+    --parchment-soft: 206 200 186; /* #CEC8BA */
+
+    --rule: 34 46 66; /* #222E42 */
+    --rule-deep: 237 233 225;
+
+    --accent: 201 160 99; /* #C9A063 — 7.4:1 on the dark ground */
+    --accent-deep: 201 160 99;
+
+    --scrim-from: 3 8 17;
+
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-surface text-ink font-sans text-body;
+    font-feature-settings: 'kern' 1;
+    /* Only the ground shifts on a theme change; text colour follows it. */
+    transition: background-color 500ms var(--ease-editorial);
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-serif font-normal text-ink;
+    text-wrap: balance;
+  }
+
+  /* Old-style figures read as decorative at display sizes; lining figures
+     keep numerals aligned with the typographic grid. */
+  .font-serif {
+    font-variant-numeric: lining-nums;
+  }
+
+  ::selection {
+    background: rgb(var(--accent));
+    color: rgb(var(--surface));
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+@layer components {
+  /*
+   * Scroll reveal. The resting state IS the finished layout — opacity and
+   * transform apply only once JavaScript has confirmed both that it is running
+   * and that the visitor has not asked for reduced motion. With JS disabled, or
+   * motion reduced, nothing here ever engages.
+   */
+  .js-motion [data-reveal] {
+    opacity: 0;
+    transform: translateY(var(--reveal-distance));
+    transition:
+      opacity var(--reveal-duration) var(--ease-editorial),
+      transform var(--reveal-duration) var(--ease-editorial);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .js-motion [data-reveal='shown'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /*
+   * Photography grade. The supplied images are warm and highly saturated; this
+   * pulls them toward the palette. Dark mode dims them a further step so a
+   * full-bleed photograph does not become the brightest thing on a night page.
+   */
+  .photo-grade {
+    filter: saturate(0.72) contrast(1.02);
+  }
+
+  .dark .photo-grade {
+    filter: saturate(0.62) contrast(1.02) brightness(0.78);
+  }
+
+  .photo-scrim::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--scrim-from) / 0.55) 0%,
+      rgb(var(--scrim-from) / 0.34) 42%,
+      rgb(var(--scrim-from) / 0.78) 100%
+    );
+    pointer-events: none;
+  }
+
+  .dark .photo-scrim::after {
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--scrim-from) / 0.72) 0%,
+      rgb(var(--scrim-from) / 0.55) 42%,
+      rgb(var(--scrim-from) / 0.88) 100%
+    );
+  }
+
+  /* Underline that draws from the left on hover and on keyboard focus. */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: left 100%;
+    background-repeat: no-repeat;
+    transition: background-size 420ms var(--ease-editorial);
+    padding-bottom: 0.14em;
+  }
+
+  .link-draw:hover,
+  .link-draw:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
